@@ -1,0 +1,25 @@
+{
+  "name": "@anthropic-demo/onemega-extension",
+  "version": "4.0.0-alpha.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@anthropic-demo/onemega-core": "workspace:*",
+    "@anthropic-demo/onemega-pac": "workspace:*",
+    "@crxjs/vite-plugin": "^2.0.0-beta.25",
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/chrome": "^0.0.268",
+    "autoprefixer": "^10.4.0",
+    "svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.4.0",
+    "vite": "^6.0.0"
+  }
+}

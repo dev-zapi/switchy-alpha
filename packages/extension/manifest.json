@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "ZeroOmega",
+  "version": "4.0.0",
+  "description": "Manage and switch between multiple proxies quickly & easily.",
+  "action": {
+    "default_title": "ZeroOmega",
+    "default_popup": "src/popup/index.html"
+  },
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "minimum_chrome_version": "88",
+  "options_page": "src/options/index.html",
+  "options_ui": {
+    "page": "src/options/index.html",
+    "browser_style": false,
+    "open_in_tab": true
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+O"
+      }
+    }
+  },
+  "permissions": [
+    "proxy",
+    "tabs",
+    "alarms",
+    "storage",
+    "unlimitedStorage",
+    "webRequest",
+    "webRequestAuthProvider",
+    "contextMenus"
+  ],
+  "host_permissions": ["<all_urls>"]
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["chrome", "svelte"],
+    "paths": {
+      "$lib/*": ["./src/lib/*"],
+      "$components/*": ["./src/components/*"],
+      "@/*": ["./src/*"]
+    },
+    "baseUrl": "."
+  },
+  "include": ["src/**/*", "src/**/*.svelte"],
+  "exclude": ["node_modules", "dist", "tests"]
+}

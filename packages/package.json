@@ -1,0 +1,27 @@
+{
+  "name": "@anthropic-demo/onemega",
+  "version": "4.0.0-alpha.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r run dev",
+    "test": "pnpm -r run test",
+    "lint": "eslint packages --ext .ts,.svelte",
+    "format": "prettier --write \"packages/**/*.{ts,svelte,json,css}\"",
+    "typecheck": "pnpm -r run typecheck"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-svelte": "^2.35.0",
+    "prettier": "^3.2.0",
+    "prettier-plugin-svelte": "^3.2.0",
+    "typescript": "^5.4.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
