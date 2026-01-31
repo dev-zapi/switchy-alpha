@@ -83,7 +83,7 @@
   const allProfiles = $derived([...builtinProfiles, ...profiles]);
 </script>
 
-<div class="w-72 glass dark:glass-dark rounded-xl overflow-hidden">
+<div class="w-72 bg-white dark:bg-gray-900 overflow-hidden">
   <!-- Header -->
   <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200/50 dark:border-gray-700/50">
     <div class="flex items-center gap-2">
