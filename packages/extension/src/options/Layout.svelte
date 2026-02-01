@@ -36,12 +36,12 @@
     system: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
   };
 
-  // Theme labels - make reactive
-  let themeLabels = $derived({
-    light: t('theme_light') || 'Light',
-    dark: t('theme_dark') || 'Dark',
-    system: t('theme_system') || 'System',
-  });
+  // Theme labels
+  const themeLabels = {
+    light: 'Light',
+    dark: 'Dark',
+    system: 'System',
+  };
 
   // Language dropdown state
   let showLangDropdown = $state(false);
