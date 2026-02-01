@@ -136,8 +136,8 @@ export const languages: LanguageInfo[] = [
   },
   {
     "code": "zh-TW",
-    "label": "Traditional Chinese",
-    "nativeLabel": "繁體中文"
+    "label": "Traditional Chinese (Taiwan)",
+    "nativeLabel": "繁體中文（台灣）"
   },
   {
     "code": "tr",

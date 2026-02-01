@@ -20,7 +20,7 @@ const OUTPUT_FILE = path.resolve(__dirname, '../src/lib/locales.ts');
 const languageMeta = {
   'en_US': { code: 'en', label: 'English', nativeLabel: 'English' },
   'zh_CN': { code: 'zh-CN', label: 'Simplified Chinese', nativeLabel: '简体中文' },
-  'zh_TW': { code: 'zh-TW', label: 'Traditional Chinese', nativeLabel: '繁體中文' },
+  'zh_TW': { code: 'zh-TW', label: 'Traditional Chinese (Taiwan)', nativeLabel: '繁體中文（台灣）' },
   'zh_Hant': { code: 'zh-Hant', label: 'Traditional Chinese', nativeLabel: '繁體中文' },
   'de': { code: 'de', label: 'German', nativeLabel: 'Deutsch' },
   'fr': { code: 'fr', label: 'French', nativeLabel: 'Français' },
