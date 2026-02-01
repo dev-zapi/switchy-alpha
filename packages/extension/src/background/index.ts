@@ -39,6 +39,7 @@ async function loadOptions(): Promise<OmegaOptions> {
 
 // Apply a profile (set proxy settings)
 async function applyProfile(name: string): Promise<void> {
+  console.log('[applyProfile] Called with name:', name);
   currentProfileName = name;
   await chrome.storage.local.set({ _currentProfileName: name });
   
@@ -46,6 +47,8 @@ async function applyProfile(name: string): Promise<void> {
   const profile = name === 'direct' || name === 'system'
     ? null
     : options ? Profiles.byName(name, options as unknown as Record<string, Profile>) : null;
+  
+  console.log('[applyProfile] Profile found:', profile?.name, profile?.profileType);
   
   if (name === 'direct') {
     // Direct connection - clear proxy
@@ -107,6 +110,7 @@ function updateBadge(profileName: string): void {
     : profileName === 'system' ? 'S'
     : profileName.charAt(0).toUpperCase();
   
+  console.log('[updateBadge] Profile:', profileName, '-> Badge text:', text);
   chrome.action.setBadgeText({ text });
   chrome.action.setBadgeBackgroundColor({ color: '#4A90D9' });
 }
@@ -141,18 +145,18 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 // Listen for messages from popup/options
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  (async () => {
+  // Handle async operations properly
+  const handleMessage = async () => {
     try {
       switch (message.action) {
         case 'getOptions':
           if (!options) {
             options = await loadOptions();
           }
-          sendResponse({
+          return {
             options,
             currentProfileName,
-          });
-          break;
+          };
           
         case 'setOptions':
           if (message.options) {
@@ -161,13 +165,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
             // Re-apply current profile with new settings
             await applyProfile(currentProfileName);
           }
-          sendResponse({ success: true });
-          break;
+          return { success: true };
           
         case 'applyProfile':
           await applyProfile(message.profileName);
-          sendResponse({ success: true });
-          break;
+          return { success: true };
           
         case 'importOptions':
           if (message.options) {
@@ -175,25 +177,29 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
             await chrome.storage.local.set(message.options);
             options = message.options;
           }
-          sendResponse({ success: true });
-          break;
+          return { success: true };
           
         case 'resetOptions':
           await chrome.storage.local.clear();
           options = getDefaultOptions();
           await chrome.storage.local.set(options);
           await applyProfile('system');
-          sendResponse({ success: true });
-          break;
+          return { success: true };
           
         default:
-          sendResponse({ error: 'Unknown action' });
+          return { error: 'Unknown action' };
       }
     } catch (e) {
       console.error('Message handler error:', e);
-      sendResponse({ error: e instanceof Error ? e.message : 'Unknown error' });
+      return { error: e instanceof Error ? e.message : 'Unknown error' };
     }
-  })();
+  };
+  
+  // Call async handler and send response
+  handleMessage().then(sendResponse).catch((error) => {
+    console.error('Message handler failed:', error);
+    sendResponse({ error: error instanceof Error ? error.message : 'Unknown error' });
+  });
   
   return true; // Keep message channel open for async response
 });
