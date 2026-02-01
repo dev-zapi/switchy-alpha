@@ -65,6 +65,19 @@ async function applyProfile(name: string): Promise<void> {
     const proxy = fixedProfile.fallbackProxy;
     
     if (proxy?.host) {
+      // Convert bypassList from BypassCondition objects to strings
+      const bypassConditions = fixedProfile.bypassList || [];
+      const bypassList: string[] = bypassConditions
+        .map((c: any) => c.pattern || c)
+        .filter((p: any) => typeof p === 'string' && p.length > 0);
+      
+      console.log('Applying proxy:', {
+        scheme: proxy.scheme || 'http',
+        host: proxy.host,
+        port: proxy.port || 8080,
+        bypassList,
+      });
+      
       await chrome.proxy.settings.set({
         value: {
           mode: 'fixed_servers',
@@ -74,11 +87,13 @@ async function applyProfile(name: string): Promise<void> {
               host: proxy.host,
               port: proxy.port || 8080,
             },
-            bypassList: fixedProfile.bypassList || [],
+            bypassList,
           },
         },
         scope: 'regular',
       });
+    } else {
+      console.warn('Fixed profile has no fallbackProxy configured:', name);
     }
   }
   
@@ -143,6 +158,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           if (message.options) {
             options = message.options;
             await chrome.storage.local.set(options);
+            // Re-apply current profile with new settings
+            await applyProfile(currentProfileName);
           }
           sendResponse({ success: true });
           break;
