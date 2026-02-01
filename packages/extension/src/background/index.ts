@@ -39,7 +39,6 @@ async function loadOptions(): Promise<OmegaOptions> {
 
 // Apply a profile (set proxy settings)
 async function applyProfile(name: string): Promise<void> {
-  console.log('[applyProfile] Called with name:', name);
   currentProfileName = name;
   await chrome.storage.local.set({ _currentProfileName: name });
   
@@ -47,8 +46,6 @@ async function applyProfile(name: string): Promise<void> {
   const profile = name === 'direct' || name === 'system'
     ? null
     : options ? Profiles.byName(name, options as unknown as Record<string, Profile>) : null;
-  
-  console.log('[applyProfile] Profile found:', profile?.name, profile?.profileType);
   
   if (name === 'direct') {
     // Direct connection - clear proxy
@@ -110,7 +107,6 @@ function updateBadge(profileName: string): void {
     : profileName === 'system' ? 'S'
     : profileName.charAt(0).toUpperCase();
   
-  console.log('[updateBadge] Profile:', profileName, '-> Badge text:', text);
   chrome.action.setBadgeText({ text });
   chrome.action.setBadgeBackgroundColor({ color: '#4A90D9' });
 }

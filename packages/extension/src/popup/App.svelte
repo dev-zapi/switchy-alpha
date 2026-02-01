@@ -65,17 +65,14 @@
   });
 
   async function selectProfile(name: string) {
-    console.log('[Popup] Switching to profile:', name);
     try {
       if (typeof chrome !== 'undefined' && chrome.runtime) {
-        const response = await chrome.runtime.sendMessage({
+        await chrome.runtime.sendMessage({
           action: 'applyProfile',
           profileName: name,
         });
-        console.log('[Popup] applyProfile response:', response);
       }
       currentProfileName = name;
-      console.log('[Popup] currentProfileName updated to:', currentProfileName);
     } catch (e) {
       console.error('Failed to apply profile:', e);
     }
