@@ -38,9 +38,9 @@
 
   // Theme labels - make reactive with proper fallback
   let themeLabels = $derived({
-    light: (t('theme_light') === 'theme_light') ? 'Light' : t('theme_light'),
-    dark: (t('theme_dark') === 'theme_dark') ? 'Dark' : t('theme_dark'),
-    system: (t('theme_system') === 'theme_system') ? 'System' : t('theme_system'),
+    light: t('theme_light', undefined, 'Light'),
+    dark: t('theme_dark', undefined, 'Dark'),
+    system: t('theme_system', undefined, 'System'),
   });
 
   // Language dropdown state

@@ -96,11 +96,20 @@ async function setLanguage(lang: Language): Promise<void> {
 
 /**
  * Translate a message key to localized string
+ * @param key - Translation key
+ * @param params - Placeholder parameters (optional)
+ * @param defaultValue - Default value if translation not found (optional)
+ * @returns Translated string, defaultValue, or key (in order of priority)
  */
-function t(key: TranslationKey, params?: TranslationParams): string {
+function t(key: TranslationKey, params?: TranslationParams, defaultValue?: string): string {
   const messages = translations[currentLanguage] || translations['en'];
   const fallback = translations['en'];
-  let message = messages[key] || fallback[key] || key;
+  let message = messages[key] || fallback[key];
+  
+  // If no translation found, use defaultValue or key
+  if (!message) {
+    return defaultValue ?? key;
+  }
 
   // Replace placeholders
   if (params) {
