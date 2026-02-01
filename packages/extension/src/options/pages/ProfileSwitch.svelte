@@ -144,7 +144,7 @@
   }
 </script>
 
-<div class="max-w-5xl">
+<div class="max-w-full">
   <!-- Header -->
   <div class="flex items-center gap-4 mb-6">
     <button
@@ -183,7 +183,7 @@
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
-            <th class="px-4 py-3 font-medium w-10">{t('options_sort')}</th>
+            <th class="px-4 py-3 font-medium w-20">{t('options_sort')}</th>
             <th class="px-4 py-3 font-medium w-48">{t('options_conditionType')}</th>
             <th class="px-4 py-3 font-medium">{t('options_conditionDetails')}</th>
             <th class="px-4 py-3 font-medium w-48">{t('options_resultProfile')}</th>
