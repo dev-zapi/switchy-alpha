@@ -36,12 +36,12 @@
     system: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
   };
 
-  // Theme labels
-  const themeLabels = {
-    light: 'Light',
-    dark: 'Dark',
-    system: 'System',
-  };
+  // Theme labels - make reactive with proper fallback
+  let themeLabels = $derived({
+    light: (t('theme_light') === 'theme_light') ? 'Light' : t('theme_light'),
+    dark: (t('theme_dark') === 'theme_dark') ? 'Dark' : t('theme_dark'),
+    system: (t('theme_system') === 'theme_system') ? 'System' : t('theme_system'),
+  });
 
   // Language dropdown state
   let showLangDropdown = $state(false);
