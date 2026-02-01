@@ -146,9 +146,4 @@
       {/if}
     {/if}
   </div>
-
-  <!-- Footer -->
-  <div class="px-4 py-2 border-t border-gray-200/50 dark:border-gray-700/50 text-xs text-gray-400 dark:text-gray-500 text-center">
-    {t('popup_currentProfile')}: {currentProfileName}
-  </div>
 </div>
