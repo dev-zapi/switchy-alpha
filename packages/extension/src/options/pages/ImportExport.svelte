@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { t } from '$lib/i18n';
+  import { t } from '$lib/i18n.svelte';
   import optionsStore from '$lib/stores/options.svelte';
   import Button from '$components/ui/Button.svelte';
   import Alert from '$components/ui/Alert.svelte';

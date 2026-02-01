@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Profile, Condition, SwitchRule } from '@anthropic-demo/switchyalpha-pac';
-  import { t } from '$lib/i18n';
+  import { t } from '$lib/i18n.svelte';
   import optionsStore from '$lib/stores/options.svelte';
   import Button from '$components/ui/Button.svelte';
   import ProfileSelect from '$components/ProfileSelect.svelte';

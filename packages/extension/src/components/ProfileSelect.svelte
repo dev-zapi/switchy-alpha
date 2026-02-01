@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Profile } from '@anthropic-demo/switchyalpha-pac';
   import ProfileIcon from './ProfileIcon.svelte';
-  import { t } from '$lib/i18n';
+  import { t } from '$lib/i18n.svelte';
 
   interface Props {
     profiles: Profile[];

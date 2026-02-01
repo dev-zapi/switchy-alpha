@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
-  import { t } from '$lib/i18n';
+  import { t } from '$lib/i18n.svelte';
 
   interface Props {
     onSave: (profile: { name: string; profileType: string }) => void;

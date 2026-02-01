@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { onMount } from 'svelte';
-  import { t } from '$lib/i18n';
+  import i18nStore, { t } from '$lib/i18n.svelte';
   import optionsStore from '$lib/stores/options.svelte';
   import themeStore from '$lib/stores/theme.svelte';
   import Button from '$components/ui/Button.svelte';
@@ -21,12 +21,13 @@
 
   let { currentPage = 'profiles', onnavigate, children }: Props = $props();
 
-  const navItems: NavItem[] = [
+  // Make navItems reactive so it updates when language changes
+  let navItems = $derived<NavItem[]>([
     { id: 'profiles', label: 'Profiles', icon: 'M4 6h16M4 10h16M4 14h16M4 18h16' },
     { id: 'general', label: t('nav_general'), icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
     { id: 'import-export', label: t('nav_importExport'), icon: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' },
     { id: 'about', label: t('nav_about'), icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-  ];
+  ]);
 
   // Theme icons
   const themeIcons = {
@@ -35,12 +36,15 @@
     system: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
   };
 
-  // Theme labels
-  const themeLabels = {
+  // Theme labels - make reactive
+  let themeLabels = $derived({
     light: t('theme_light') || 'Light',
     dark: t('theme_dark') || 'Dark',
     system: t('theme_system') || 'System',
-  };
+  });
+
+  // Language dropdown state
+  let showLangDropdown = $state(false);
 
   onMount(() => {
     themeStore.init();
@@ -60,6 +64,19 @@
 
   function handleThemeCycle() {
     themeStore.cycle();
+  }
+
+  function handleLanguageSelect(lang: typeof i18nStore.language) {
+    i18nStore.setLanguage(lang);
+    showLangDropdown = false;
+  }
+
+  function toggleLangDropdown() {
+    showLangDropdown = !showLangDropdown;
+  }
+
+  function closeLangDropdown() {
+    showLangDropdown = false;
   }
 </script>
 
@@ -130,6 +147,60 @@
         </svg>
         {themeLabels[themeStore.mode]}
       </button>
+    </div>
+
+    <!-- Language switcher -->
+    <div class="p-4 border-t border-gray-200/50 dark:border-gray-700/50 relative">
+      <button
+        type="button"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-500/10 dark:text-gray-400 dark:hover:bg-gray-500/10 transition-smooth"
+        onclick={toggleLangDropdown}
+        aria-label="Change language"
+        aria-expanded={showLangDropdown}
+        aria-haspopup="listbox"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+        </svg>
+        {i18nStore.currentLanguageInfo?.nativeLabel || 'English'}
+        <svg class="w-4 h-4 ml-auto transition-transform {showLangDropdown ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {#if showLangDropdown}
+        <!-- Backdrop to close dropdown -->
+        <button
+          type="button"
+          class="fixed inset-0 z-10"
+          onclick={closeLangDropdown}
+          aria-label="Close language menu"
+        ></button>
+
+        <!-- Dropdown menu -->
+        <div class="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 overflow-hidden" role="listbox">
+          {#each i18nStore.languages as lang}
+            <button
+              type="button"
+              class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left transition-smooth
+                {i18nStore.language === lang.code 
+                  ? 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400' 
+                  : 'text-gray-600 hover:bg-gray-500/10 dark:text-gray-400 dark:hover:bg-gray-500/10'}"
+              onclick={() => handleLanguageSelect(lang.code)}
+              role="option"
+              aria-selected={i18nStore.language === lang.code}
+            >
+              <span>{lang.nativeLabel}</span>
+              <span class="text-xs text-gray-400 dark:text-gray-500">({lang.label})</span>
+              {#if i18nStore.language === lang.code}
+                <svg class="w-4 h-4 ml-auto text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              {/if}
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
   </aside>
 

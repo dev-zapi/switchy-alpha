@@ -9,13 +9,17 @@
   import ProfileFixed from './pages/ProfileFixed.svelte';
   import ProfileSwitch from './pages/ProfileSwitch.svelte';
   import optionsStore from '$lib/stores/options.svelte';
+  import i18nStore from '$lib/i18n.svelte';
   import type { Profile, FixedProfile, SwitchProfile } from '@anthropic-demo/switchyalpha-pac';
 
   let currentPage = $state('profiles');
   let editingProfile = $state<Profile | null>(null);
 
   onMount(async () => {
-    await optionsStore.init();
+    await Promise.all([
+      optionsStore.init(),
+      i18nStore.init()
+    ]);
   });
 
   function handleNavigate(page: string) {

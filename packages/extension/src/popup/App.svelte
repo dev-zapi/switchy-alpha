@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { Profile } from '@anthropic-demo/switchyalpha-pac';
-  import { t } from '$lib/i18n';
+  import { t } from '$lib/i18n.svelte';
 
   // Built-in profiles
   const builtinProfiles: Profile[] = [
