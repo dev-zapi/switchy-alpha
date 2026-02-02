@@ -35,10 +35,31 @@ interface ConditionHandler {
   analyze: (condition: Condition) => unknown;
   /** Match the condition against a request */
   match: (condition: Condition, request: Request, cache: ConditionCache) => boolean;
+  /** Compile the condition to JavaScript code string for PAC script */
+  compile?: (condition: Condition, cache: ConditionCache) => string;
   /** Convert condition to string */
   str?: (condition: Condition) => string;
   /** Parse condition from string */
   fromStr?: (str: string, condition: Partial<Condition>) => Condition;
+}
+
+/**
+ * Helper function to escape string for JavaScript
+ */
+function escapeJsString(str: string): string {
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
+}
+
+/**
+ * Helper function to convert RegExp to JavaScript code string
+ */
+function regexToCode(regex: RegExp, varName: string): string {
+  return `${regex.toString()}.test(${varName})`;
 }
 
 /**
@@ -112,6 +133,7 @@ const conditionTypes: Record<string, ConditionHandler> = {
     abbrs: ['True'],
     analyze: () => null,
     match: () => true,
+    compile: () => 'true',
     str: () => '',
     fromStr: (_str, condition) => condition as Condition,
   },
@@ -120,6 +142,7 @@ const conditionTypes: Record<string, ConditionHandler> = {
     abbrs: ['False', 'Disabled'],
     analyze: () => null,
     match: () => false,
+    compile: () => 'false',
     fromStr: (str, condition) => {
       if (str.length > 0) {
         (condition as { pattern: string }).pattern = str;
@@ -132,6 +155,7 @@ const conditionTypes: Record<string, ConditionHandler> = {
     abbrs: ['UR', 'URegex', 'UrlR', 'UrlRegex'],
     analyze: (condition) => safeRegex(escapeSlash((condition as { pattern: string }).pattern)),
     match: (_condition, request, cache) => (cache.analyzed as RegExp).test(request.url),
+    compile: (_condition, cache) => regexToCode(cache.analyzed as RegExp, 'url'),
   },
 
   UrlWildcardCondition: {
@@ -144,12 +168,14 @@ const conditionTypes: Record<string, ConditionHandler> = {
       return safeRegex(parts.join('|'));
     },
     match: (_condition, request, cache) => (cache.analyzed as RegExp).test(request.url),
+    compile: (_condition, cache) => regexToCode(cache.analyzed as RegExp, 'url'),
   },
 
   HostRegexCondition: {
     abbrs: ['R', 'HR', 'Regex', 'HostR', 'HRegex', 'HostRegex'],
     analyze: (condition) => safeRegex(escapeSlash((condition as { pattern: string }).pattern)),
     match: (_condition, request, cache) => (cache.analyzed as RegExp).test(request.host),
+    compile: (_condition, cache) => regexToCode(cache.analyzed as RegExp, 'host'),
   },
 
   HostWildcardCondition: {
@@ -178,6 +204,7 @@ const conditionTypes: Record<string, ConditionHandler> = {
       return safeRegex(parts.join('|'));
     },
     match: (_condition, request, cache) => (cache.analyzed as RegExp).test(request.host),
+    compile: (_condition, cache) => regexToCode(cache.analyzed as RegExp, 'host'),
   },
 
   BypassCondition: {
@@ -261,7 +288,7 @@ const conditionTypes: Record<string, ConditionHandler> = {
 
       return cache;
     },
-    match: (condition, request, cache) => {
+    match: (_condition, request, cache) => {
       const c = cache.analyzed as {
         host: string | RegExp | null;
         ip: { ip: string; prefixLength: number } | null;
@@ -291,6 +318,51 @@ const conditionTypes: Record<string, ConditionHandler> = {
 
       return true;
     },
+    compile: (_condition, cache) => {
+      const c = cache.analyzed as {
+        host: string | RegExp | null;
+        ip: { ip: string; prefixLength: number } | null;
+        scheme: string | null;
+        url: RegExp | null;
+      };
+
+      const conditions: string[] = [];
+
+      // Handle <local>
+      if (c.host === '<local>') {
+        return "(host === '127.0.0.1' || host === '::1' || host.indexOf('.') < 0)";
+      }
+
+      // Scheme check
+      if (c.scheme) {
+        conditions.push(`scheme === '${escapeJsString(c.scheme)}'`);
+      }
+
+      // IP/CIDR check - simplified, use isInNet for IPv4
+      if (c.ip) {
+        // Use PAC's built-in isInNet function for IPv4
+        const mask = (0xffffffff << (32 - c.ip.prefixLength)) >>> 0;
+        const maskStr = [
+          (mask >>> 24) & 255,
+          (mask >>> 16) & 255,
+          (mask >>> 8) & 255,
+          mask & 255,
+        ].join('.');
+        conditions.push(`isInNet(host, '${c.ip.ip}', '${maskStr}')`);
+      }
+
+      // Host regex check
+      if (c.host && typeof c.host !== 'string') {
+        conditions.push(regexToCode(c.host, 'host'));
+      }
+
+      // URL regex check
+      if (c.url) {
+        conditions.push(regexToCode(c.url, 'url'));
+      }
+
+      return conditions.length > 0 ? `(${conditions.join(' && ')})` : 'true';
+    },
     str: (condition) => {
       const cache = conditionTypes['BypassCondition']!.analyze(condition) as { normalizedPattern: string };
       return cache.normalizedPattern || (condition as { pattern: string }).pattern;
@@ -302,6 +374,10 @@ const conditionTypes: Record<string, ConditionHandler> = {
     analyze: () => null,
     match: (condition, request) => {
       return request.scheme === 'http' && request.url.indexOf((condition as { pattern: string }).pattern) >= 0;
+    },
+    compile: (condition) => {
+      const pattern = (condition as { pattern: string }).pattern;
+      return `(scheme === 'http' && url.indexOf('${escapeJsString(pattern)}') >= 0)`;
     },
   },
 
@@ -328,6 +404,18 @@ const conditionTypes: Record<string, ConditionHandler> = {
       if (hostAddr.v4 !== addr.v4) return false;
 
       return isIpInSubnet(request.host, c.ip, c.prefixLength);
+    },
+    compile: (condition) => {
+      const c = condition as { ip: string; prefixLength: number };
+      // Use PAC's built-in isInNet function
+      const mask = (0xffffffff << (32 - c.prefixLength)) >>> 0;
+      const maskStr = [
+        (mask >>> 24) & 255,
+        (mask >>> 16) & 255,
+        (mask >>> 8) & 255,
+        mask & 255,
+      ].join('.');
+      return `isInNet(host, '${c.ip}', '${maskStr}')`;
     },
     str: (condition) => {
       const c = condition as { ip: string; prefixLength: number };
@@ -362,6 +450,11 @@ const conditionTypes: Record<string, ConditionHandler> = {
       }
       return dotCount >= c.minValue;
     },
+    compile: (condition) => {
+      const c = condition as { minValue: number; maxValue: number };
+      // Count dots in host: host.split('.').length - 1
+      return `(function(h){var d=0;for(var i=0;i<h.length;i++)if(h[i]==='.')d++;return d>=${c.minValue}&&d<=${c.maxValue};})(host)`;
+    },
     str: (condition) => {
       const c = condition as { minValue: number; maxValue: number };
       return c.minValue + '~' + c.maxValue;
@@ -384,6 +477,15 @@ const conditionTypes: Record<string, ConditionHandler> = {
         return c.days.charCodeAt(day) > 64;
       }
       return (c.startDay ?? 0) <= day && day <= (c.endDay ?? 6);
+    },
+    compile: (condition) => {
+      const c = condition as { days?: string; startDay?: number; endDay?: number };
+      if (c.days) {
+        return `'${escapeJsString(c.days)}'.charCodeAt((new Date()).getDay()) > 64`;
+      }
+      const startDay = c.startDay ?? 0;
+      const endDay = c.endDay ?? 6;
+      return `(function(){var d=(new Date()).getDay();return d>=${startDay}&&d<=${endDay};})()`;
     },
     str: (condition) => {
       const c = condition as { days?: string; startDay?: number; endDay?: number };
@@ -410,6 +512,10 @@ const conditionTypes: Record<string, ConditionHandler> = {
       const c = condition as { startHour: number; endHour: number };
       const hour = new Date().getHours();
       return c.startHour <= hour && hour <= c.endHour;
+    },
+    compile: (condition) => {
+      const c = condition as { startHour: number; endHour: number };
+      return `(function(){var h=(new Date()).getHours();return h>=${c.startHour}&&h<=${c.endHour};})()`;
     },
     str: (condition) => {
       const c = condition as { startHour: number; endHour: number };
@@ -569,6 +675,18 @@ export const Conditions = {
    * Local hosts list
    */
   localHosts: LOCAL_HOSTS,
+
+  /**
+   * Compile a condition to JavaScript code string for PAC script
+   */
+  compile: (condition: Condition): string => {
+    const cache = Conditions.analyze(condition);
+    const handler = getHandler(condition.conditionType);
+    if (!handler.compile) {
+      throw new Error(`Condition type ${condition.conditionType} does not support compilation`);
+    }
+    return handler.compile(condition, cache);
+  },
 
   /**
    * Get weekday list from condition

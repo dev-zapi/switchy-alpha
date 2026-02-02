@@ -1,5 +1,14 @@
 // Background service worker for ZeroOmega
-import { Profiles, type Profile, type OmegaOptions } from '@anthropic-demo/switchyalpha-pac';
+import {
+  Profiles,
+  generatePacScript,
+  type Profile,
+  type OmegaOptions,
+  type FixedProfile,
+  type PacProfile,
+  type SwitchProfile,
+  type RuleListProfile,
+} from '@anthropic-demo/switchyalpha-pac';
 
 console.log('ZeroOmega background service worker started');
 
@@ -41,12 +50,15 @@ async function loadOptions(): Promise<OmegaOptions> {
 async function applyProfile(name: string): Promise<void> {
   currentProfileName = name;
   await chrome.storage.local.set({ _currentProfileName: name });
-  
+
   // Get profile
-  const profile = name === 'direct' || name === 'system'
-    ? null
-    : options ? Profiles.byName(name, options as unknown as Record<string, Profile>) : null;
-  
+  const profile =
+    name === 'direct' || name === 'system'
+      ? null
+      : options
+        ? Profiles.byName(name, options as unknown as Record<string, Profile>)
+        : null;
+
   if (name === 'direct') {
     // Direct connection - clear proxy
     await chrome.proxy.settings.set({
@@ -61,44 +73,159 @@ async function applyProfile(name: string): Promise<void> {
     });
   } else if (profile?.profileType === 'FixedProfile') {
     // Fixed proxy
-    const fixedProfile = profile as any;
-    const proxy = fixedProfile.fallbackProxy;
-    
-    if (proxy?.host) {
-      // Convert bypassList from BypassCondition objects to strings
-      const bypassConditions = fixedProfile.bypassList || [];
-      const bypassList: string[] = bypassConditions
-        .map((c: any) => c.pattern || c)
-        .filter((p: any) => typeof p === 'string' && p.length > 0);
-      
-      console.log('Applying proxy:', {
-        scheme: proxy.scheme || 'http',
-        host: proxy.host,
-        port: proxy.port || 8080,
-        bypassList,
-      });
-      
-      await chrome.proxy.settings.set({
-        value: {
-          mode: 'fixed_servers',
-          rules: {
-            singleProxy: {
-              scheme: proxy.scheme || 'http',
-              host: proxy.host,
-              port: proxy.port || 8080,
-            },
-            bypassList,
-          },
-        },
-        scope: 'regular',
-      });
-    } else {
-      console.warn('Fixed profile has no fallbackProxy configured:', name);
-    }
+    await applyFixedProfile(profile as FixedProfile);
+  } else if (
+    profile?.profileType === 'SwitchProfile' ||
+    profile?.profileType === 'VirtualProfile'
+  ) {
+    // Switch profile - uses PAC script
+    await applySwitchProfile(profile as SwitchProfile, name);
+  } else if (
+    profile?.profileType === 'RuleListProfile' ||
+    profile?.profileType === 'AutoProxyRuleListProfile'
+  ) {
+    // Rule list profile - uses PAC script
+    await applyRuleListProfile(profile as RuleListProfile, name);
+  } else if (profile?.profileType === 'PacProfile') {
+    // PAC profile
+    await applyPacProfile(profile as PacProfile);
+  } else {
+    console.warn('Unknown or null profile type:', name, profile?.profileType);
   }
-  
+
   // Update badge
   updateBadge(name);
+}
+
+// Apply a FixedProfile
+async function applyFixedProfile(profile: FixedProfile): Promise<void> {
+  const proxy = profile.fallbackProxy;
+
+  if (proxy?.host) {
+    // Convert bypassList from BypassCondition objects to strings
+    const bypassConditions = profile.bypassList || [];
+    const bypassList: string[] = bypassConditions
+      .map((c: any) => c.pattern || c)
+      .filter((p: any) => typeof p === 'string' && p.length > 0);
+
+    console.log('Applying fixed proxy:', {
+      scheme: proxy.scheme || 'http',
+      host: proxy.host,
+      port: proxy.port || 8080,
+      bypassList,
+    });
+
+    await chrome.proxy.settings.set({
+      value: {
+        mode: 'fixed_servers',
+        rules: {
+          singleProxy: {
+            scheme: proxy.scheme || 'http',
+            host: proxy.host,
+            port: proxy.port || 8080,
+          },
+          bypassList,
+        },
+      },
+      scope: 'regular',
+    });
+  } else {
+    console.warn('Fixed profile has no fallbackProxy configured:', profile.name);
+  }
+}
+
+// Apply a SwitchProfile using PAC script
+async function applySwitchProfile(profile: SwitchProfile, name: string): Promise<void> {
+  if (!options) {
+    console.warn('No options loaded, cannot apply switch profile');
+    return;
+  }
+
+  try {
+    const pacScript = generatePacScript(
+      options as unknown as Record<string, Profile>,
+      name,
+      { includeComments: true }
+    );
+
+    console.log('Applying PAC script for switch profile:', name);
+    console.log('PAC script length:', pacScript.length);
+
+    await chrome.proxy.settings.set({
+      value: {
+        mode: 'pac_script',
+        pacScript: {
+          data: pacScript,
+        },
+      },
+      scope: 'regular',
+    });
+  } catch (e) {
+    console.error('Failed to generate PAC script:', e);
+  }
+}
+
+// Apply a RuleListProfile using PAC script
+async function applyRuleListProfile(profile: RuleListProfile, name: string): Promise<void> {
+  if (!options) {
+    console.warn('No options loaded, cannot apply rule list profile');
+    return;
+  }
+
+  try {
+    const pacScript = generatePacScript(
+      options as unknown as Record<string, Profile>,
+      name,
+      { includeComments: true }
+    );
+
+    console.log('Applying PAC script for rule list profile:', name);
+
+    await chrome.proxy.settings.set({
+      value: {
+        mode: 'pac_script',
+        pacScript: {
+          data: pacScript,
+        },
+      },
+      scope: 'regular',
+    });
+  } catch (e) {
+    console.error('Failed to generate PAC script:', e);
+  }
+}
+
+// Apply a PacProfile
+async function applyPacProfile(profile: PacProfile): Promise<void> {
+  if (profile.pacUrl) {
+    // Use PAC URL directly
+    console.log('Applying PAC URL:', profile.pacUrl);
+
+    await chrome.proxy.settings.set({
+      value: {
+        mode: 'pac_script',
+        pacScript: {
+          url: profile.pacUrl,
+        },
+      },
+      scope: 'regular',
+    });
+  } else if (profile.pacScript) {
+    // Use inline PAC script
+    console.log('Applying inline PAC script');
+
+    await chrome.proxy.settings.set({
+      value: {
+        mode: 'pac_script',
+        pacScript: {
+          data: profile.pacScript,
+        },
+      },
+      scope: 'regular',
+    });
+  } else {
+    console.warn('PAC profile has no URL or script:', profile.name);
+  }
 }
 
 // Update extension badge

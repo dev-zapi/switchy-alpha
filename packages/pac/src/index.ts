@@ -44,3 +44,7 @@ export {
   isIncludable,
   isInclusive,
 } from './profiles';
+
+// PAC Generator
+export { PacGenerator, generatePacScript } from './pac-generator';
+export type { PacGeneratorOptions } from './pac-generator';

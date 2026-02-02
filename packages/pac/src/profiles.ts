@@ -14,14 +14,13 @@ import type {
   Profile,
   ProfileType,
   Proxy,
-  ProxyAuth,
   Request,
   FixedProfile,
   PacProfile,
   SwitchProfile,
   RuleListProfile,
-  Condition,
   MatchResult,
+  RuleListFormat,
 } from './types';
 
 /**
@@ -253,7 +252,7 @@ export function create(name: string | Partial<Profile>, profileType?: ProfileTyp
     case 'RuleListProfile':
     case 'AutoProxyRuleListProfile': {
       const rl = profile as RuleListProfile;
-      rl.format ??= formatByType[profile.profileType ?? ''] ?? 'Switchy';
+      rl.format ??= (formatByType[profile.profileType ?? ''] ?? 'Switchy') as RuleListFormat;
       rl.defaultProfileName ??= 'direct';
       rl.matchProfileName ??= 'direct';
       rl.ruleList ??= '';
