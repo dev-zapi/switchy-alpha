@@ -6,6 +6,9 @@
   import ProfileSelect from '$components/ProfileSelect.svelte';
   import EmojiPicker from '$components/ui/EmojiPicker.svelte';
   import ColorPicker from '$components/ui/ColorPicker.svelte';
+  import { flip } from 'svelte/animate';
+  import { fly, fade } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
 
   interface Props {
     profile: Profile;
@@ -220,8 +223,13 @@
           </tr>
         </thead>
         <tbody class="divide-y dark:divide-gray-700">
-          {#each rules as rule, index}
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+          {#each rules as rule, index (rule)}
+            <tr
+              class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              animate:flip={{ duration: 300, easing: cubicOut }}
+              in:fly={{ y: 20, duration: 300, easing: cubicOut }}
+              out:fade={{ duration: 200 }}
+            >
               <!-- Sort -->
               <td class="px-4 py-3">
                 <div class="flex flex-col gap-1">
