@@ -13,6 +13,8 @@
     onchange,
   }: Props = $props();
 
+  let inputId = $derived(`color-picker-${Math.random().toString(36).slice(2, 11)}`);
+
   function handleChange(e: Event) {
     const target = e.target as HTMLInputElement;
     value = target.value;
@@ -22,7 +24,7 @@
 
 <div class="color-picker-container {className}">
   {#if label}
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+    <label for={inputId} class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
       {label}
     </label>
   {/if}
@@ -33,6 +35,7 @@
       style="background-color: {value}"
     >
       <input
+        id={inputId}
         type="color"
         {value}
         onchange={handleChange}

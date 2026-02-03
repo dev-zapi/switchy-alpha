@@ -16,6 +16,7 @@
   }: Props = $props();
 
   let isOpen = $state(false);
+  let buttonId = $derived(`emoji-picker-${Math.random().toString(36).slice(2, 11)}`);
 
   function selectEmoji(emoji: string) {
     value = emoji;
@@ -46,12 +47,13 @@
 
 <div class="emoji-picker-container relative {className}">
   {#if label}
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+    <label for={buttonId} class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
       {label}
     </label>
   {/if}
 
   <button
+    id={buttonId}
     type="button"
     onclick={togglePicker}
     class="flex items-center justify-center w-12 h-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-smooth text-xl"

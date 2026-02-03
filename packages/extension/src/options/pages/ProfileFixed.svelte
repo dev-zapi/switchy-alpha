@@ -13,14 +13,8 @@
   let { profile, onback }: Props = $props();
 
   // Profile appearance state
-  let profileIcon = $state(profile.icon || '');
-  let profileColor = $state(profile.color || '#5b9bd5');
-
-  // Sync appearance state when profile changes
-  $effect(() => {
-    profileIcon = profile.icon || '';
-    profileColor = profile.color || '#5b9bd5';
-  });
+  let profileIcon = $derived(profile.icon || '');
+  let profileColor = $derived(profile.color || '#5b9bd5');
 
   function handleIconChange(emoji: string) {
     profile.icon = emoji;
