@@ -282,7 +282,7 @@
       <textarea
         class="w-full h-48 font-mono text-sm rounded-md border border-gray-300 px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
         bind:value={bypassList}
-        onchange={handleBypassChange}
+        oninput={handleBypassChange}
         placeholder="localhost&#10;127.0.0.1&#10;*.local"
       ></textarea>
     </div>
