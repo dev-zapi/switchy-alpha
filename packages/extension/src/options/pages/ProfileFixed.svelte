@@ -51,6 +51,9 @@
     port: number;
   };
 
+  // Validation errors for proxy editors
+  let proxyErrors = $state<Record<string, string>>({});
+
   // Helper to get proxy editor for a scheme from profile
   function getProxyEditor(scheme: string, prof: Profile): ProxyEditor {
     const key = scheme || 'fallbackProxy';
@@ -95,7 +98,20 @@
     const editor = proxyEditors[scheme];
     if (!editor) return;
 
-    const proxy: Proxy | null = editor.scheme && editor.host ? {
+    // Validate: if scheme is selected, host must not be empty
+    if (editor.scheme && !editor.host.trim()) {
+      proxyErrors[scheme] = t('options_proxy_hostRequired');
+      proxyErrors = { ...proxyErrors };
+      return;
+    }
+
+    // Clear error if valid
+    if (proxyErrors[scheme]) {
+      delete proxyErrors[scheme];
+      proxyErrors = { ...proxyErrors };
+    }
+
+    const proxy: Proxy | null = editor.scheme ? {
       scheme: editor.scheme as any,
       host: editor.host,
       port: editor.port || 80,
@@ -202,12 +218,21 @@
                     {#if editor.scheme || scheme === ''}
                       <input
                         type="text"
-                        class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        class="block w-full rounded-md border {proxyErrors[scheme] ? 'border-red-500' : 'border-gray-300'} px-3 py-2 text-sm text-gray-900 dark:bg-gray-700 dark:{proxyErrors[scheme] ? 'border-red-500' : 'border-gray-600'} dark:text-gray-100"
                         bind:value={editor.host}
                         placeholder={scheme === '' ? 'proxy.example.com' : proxyEditors['']?.host || ''}
                         disabled={scheme !== '' && !editor.scheme}
                         onchange={() => handleProxyChange(scheme)}
+                        oninput={() => {
+                          if (proxyErrors[scheme]) {
+                            delete proxyErrors[scheme];
+                            proxyErrors = { ...proxyErrors };
+                          }
+                        }}
                       />
+                      {#if proxyErrors[scheme]}
+                        <p class="text-xs text-red-500 mt-1">{proxyErrors[scheme]}</p>
+                      {/if}
                     {:else}
                       <input
                         type="text"

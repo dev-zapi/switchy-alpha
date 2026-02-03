@@ -1360,6 +1360,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "options_proxy_protocol": "Protocol",
     "options_proxy_server": "Server",
     "options_proxy_port": "Port",
+    "options_proxy_hostRequired": "Server address is required",
     "options_proxy_auth": "Authentication",
     "options_proxy_authNotSupported": "Your browser DOES NOT support $PROTOCOLDISP$ proxy authentication! Please do not report this issue to ZeroOmega. Contact the support for your browser instead.",
     "options_proxy_authAllWarningPac": "Warning: The username/password may be sent to unexpected servers returned by the PAC script.",
