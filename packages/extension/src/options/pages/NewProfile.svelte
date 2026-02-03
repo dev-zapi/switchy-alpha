@@ -111,7 +111,7 @@
       <Button variant="outline" onclick={onCancel}>
         {t('dialog_cancel')}
       </Button>
-      <Button onclick={handleSubmit}>
+      <Button variant="primary" onclick={handleSubmit}>
         {t('dialog_save')}
       </Button>
     </div>
