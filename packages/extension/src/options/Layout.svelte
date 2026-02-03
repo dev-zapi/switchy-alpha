@@ -218,7 +218,7 @@
           <Button variant="ghost" size="sm" onclick={handleRevert}>
             {t('options_discard')}
           </Button>
-          <Button variant="primary" size="sm" onclick={handleApply}>
+          <Button variant="warning" size="sm" onclick={handleApply}>
             {t('options_apply')}
           </Button>
         </div>
