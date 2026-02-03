@@ -47,7 +47,9 @@
 
   const iconPath = $derived(iconPaths[profile.profileType] || iconPaths.FixedProfile);
   const colorClass = $derived(typeColors[profile.profileType] || typeColors.FixedProfile);
-  const hasEmoji = $derived(showEmoji && profile.icon);
+  // Builtin profiles (DirectProfile, SystemProfile) always use SVG icons, not emoji
+  const isBuiltinProfile = $derived(profile.profileType === 'DirectProfile' || profile.profileType === 'SystemProfile');
+  const hasEmoji = $derived(showEmoji && profile.icon && !isBuiltinProfile);
 </script>
 
 {#if hasEmoji}
