@@ -71,6 +71,7 @@
   });
   let bypassList = $state('');
   let showAdvanced = $state(false);
+  let isInitializing = $state(true);
 
   // Initialize and update when profile changes
   $effect(() => {
@@ -79,12 +80,15 @@
       editors[scheme] = getProxyEditor(scheme, profile);
     }
     proxyEditors = editors;
-    // bypassList is an array of Condition objects with pattern property
-    const conditions = (profile as any).bypassList || [];
-    bypassList = conditions
-      .map((c: any) => c.pattern || '')
-      .filter((p: string) => p.length > 0)
-      .join('\n');
+    // Only update bypassList on initial load or external profile change, not during editing
+    if (isInitializing) {
+      const conditions = (profile as any).bypassList || [];
+      bypassList = conditions
+        .map((c: any) => c.pattern || '')
+        .filter((p: string) => p.length > 0)
+        .join('\n');
+      isInitializing = false;
+    }
   });
 
   function handleProxyChange(scheme: string) {
