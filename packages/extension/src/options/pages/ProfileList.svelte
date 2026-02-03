@@ -32,6 +32,7 @@
   async function handleDelete(profile: Profile) {
     if (confirm(`Delete profile "${profile.name}"?`)) {
       optionsStore.deleteProfile(profile.name);
+      await optionsStore.applyChanges();
     }
   }
 

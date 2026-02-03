@@ -380,6 +380,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         case 'setOptions':
           if (message.options) {
             options = message.options;
+            // Clear storage first to remove deleted profiles, then set new options
+            await chrome.storage.local.clear();
             await chrome.storage.local.set(options);
             // Re-apply current profile with new settings
             await applyProfile(currentProfileName);
