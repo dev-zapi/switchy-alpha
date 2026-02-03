@@ -49,7 +49,7 @@
   <div class="flex items-center gap-4 p-6 border-b border-gray-200 dark:border-gray-700">
     <button
       type="button"
-      class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+      class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white transition-colors"
       onclick={onCancel}
       aria-label="Go back"
     >
@@ -67,7 +67,7 @@
     <!-- Profile Name -->
     <div>
       <Input
-        label={t('options_profileName')}
+        label={t('options_newProfileName')}
         bind:value={name}
         placeholder="Enter profile name"
         error={nameError}

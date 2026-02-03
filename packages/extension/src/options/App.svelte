@@ -81,7 +81,8 @@
       } as Profile;
     }
     
-    await optionsStore.addProfile(newProfile);
+    optionsStore.setProfile(newProfile);
+    await optionsStore.applyChanges();
     editingProfile = newProfile;
     currentPage = `edit-${data.profileType}`;
   }

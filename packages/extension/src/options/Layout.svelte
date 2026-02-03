@@ -214,7 +214,7 @@
         </span>
         <div class="flex gap-2">
           <Button variant="ghost" size="sm" onclick={handleRevert}>
-            {t('options_revert')}
+            {t('options_discard')}
           </Button>
           <Button variant="primary" size="sm" onclick={handleApply}>
             {t('options_apply')}
