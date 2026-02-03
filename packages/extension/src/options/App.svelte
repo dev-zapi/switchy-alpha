@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
   import Layout from './Layout.svelte';
   import ProfileList from './pages/ProfileList.svelte';
   import General from './pages/General.svelte';
@@ -93,32 +95,38 @@
     <div class="flex items-center justify-center h-64">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
     </div>
-  {:else if currentPage === 'profiles'}
-    <ProfileList onedit={handleEditProfile} oncreate={handleCreateProfile} />
-  {:else if currentPage === 'general'}
-    <General />
-  {:else if currentPage === 'about'}
-    <About />
-  {:else if currentPage === 'import-export'}
-    <ImportExport />
-  {:else if currentPage === 'new-profile'}
-    <NewProfile onSave={handleNewProfileSave} onCancel={handleBackToList} />
-  {:else if currentPage === 'edit-FixedProfile' && editingProfile}
-    <ProfileFixed profile={editingProfile} onback={handleBackToList} />
-  {:else if currentPage === 'edit-SwitchProfile' && editingProfile}
-    <ProfileSwitch profile={editingProfile} onback={handleBackToList} />
-  {:else if currentPage.startsWith('edit-') && editingProfile}
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-        Edit: {editingProfile.name}
-      </h2>
-      <p class="text-gray-600 dark:text-gray-400">
-        Profile editor for {editingProfile.profileType} coming soon.
-      </p>
-    </div>
   {:else}
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <p class="text-gray-600 dark:text-gray-400">Page not found: {currentPage}</p>
-    </div>
+    {#key currentPage}
+      <div in:fly={{ y: 20, duration: 300, easing: cubicOut }}>
+        {#if currentPage === 'profiles'}
+          <ProfileList onedit={handleEditProfile} oncreate={handleCreateProfile} />
+        {:else if currentPage === 'general'}
+          <General />
+        {:else if currentPage === 'about'}
+          <About />
+        {:else if currentPage === 'import-export'}
+          <ImportExport />
+        {:else if currentPage === 'new-profile'}
+          <NewProfile onSave={handleNewProfileSave} onCancel={handleBackToList} />
+        {:else if currentPage === 'edit-FixedProfile' && editingProfile}
+          <ProfileFixed profile={editingProfile} onback={handleBackToList} />
+        {:else if currentPage === 'edit-SwitchProfile' && editingProfile}
+          <ProfileSwitch profile={editingProfile} onback={handleBackToList} />
+        {:else if currentPage.startsWith('edit-') && editingProfile}
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Edit: {editingProfile.name}
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400">
+              Profile editor for {editingProfile.profileType} coming soon.
+            </p>
+          </div>
+        {:else}
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <p class="text-gray-600 dark:text-gray-400">Page not found: {currentPage}</p>
+          </div>
+        {/if}
+      </div>
+    {/key}
   {/if}
 </Layout>

@@ -47,32 +47,15 @@
     return result;
   });
 
-  // Get display name for a profile with icon
+  // Get display name for a profile
   function getDisplayName(profile: Profile): string {
-    const icon = profile.icon || getDefaultIcon(profile.profileType);
-    let name: string;
     if (profile.profileType === 'DirectProfile') {
-      name = t('profile_direct');
-    } else if (profile.profileType === 'SystemProfile') {
-      name = t('profile_system');
-    } else {
-      name = profile.name;
+      return t('profile_direct');
     }
-    return `${icon} ${name}`;
-  }
-
-  // Get default icon based on profile type
-  function getDefaultIcon(profileType: string): string {
-    switch (profileType) {
-      case 'FixedProfile': return '🔧';
-      case 'PacProfile': return '📜';
-      case 'SwitchProfile': return '🔄';
-      case 'RuleListProfile': return '📋';
-      case 'VirtualProfile': return '🔗';
-      case 'DirectProfile': return '⚡';
-      case 'SystemProfile': return '⚙️';
-      default: return '📁';
+    if (profile.profileType === 'SystemProfile') {
+      return t('profile_system');
     }
+    return profile.name;
   }
 
   // Find current profile for display

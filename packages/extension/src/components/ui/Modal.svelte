@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { fly, fade } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
 
   interface Props {
     open?: boolean;
@@ -41,12 +43,14 @@
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
     onclick={handleBackdropClick}
+    transition:fade={{ duration: 200, easing: cubicOut }}
   >
     <div
       class="glass dark:glass-dark rounded-xl shadow-soft-lg max-w-lg w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col {className}"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
+      transition:fly={{ y: 20, duration: 300, easing: cubicOut }}
     >
       {#if title}
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50">
