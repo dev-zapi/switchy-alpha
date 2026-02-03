@@ -127,8 +127,9 @@ export function drawIcon(options: IconOptions): ImageData {
   // Draw text (emoji or letter) - fills the entire icon
   const isEmojiText = isEmoji(text);
 
-  // Calculate font size to fill most of the icon
-  const fontSize = Math.round(size * 0.75);
+  // Calculate font size to fill the entire icon as much as possible
+  // Using 0.9 to maximize the icon/emoji size while leaving minimal padding
+  const fontSize = Math.round(size * 0.9);
 
   if (isEmojiText) {
     // For emoji, use system emoji font
